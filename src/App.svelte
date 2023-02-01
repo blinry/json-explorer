@@ -16,6 +16,7 @@
     async function getData(url) {
         header = url
         data = ""
+        let originalUrl = url
         window.location.hash = url
         if (url.startsWith("https")) {
             url = url.replace("https://", "")
@@ -27,12 +28,37 @@
                 Origin: "bla",
                 Accept: 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
             },
-        }).then(async (response) => {
-            let json = await response.json()
-            let prettyPrinted = JSON.stringify(json, null, 4).escape()
-            data = urlify(prettyPrinted)
-            //data = prettyPrinted
         })
+            .then(async (response) => {
+                if (!response.ok) {
+                    data = `Error: ${response.status} ${response.statusText}`
+                    try {
+                        let json = await response.json()
+                        let prettyPrinted = JSON.stringify(
+                            json,
+                            null,
+                            4
+                        ).escape()
+                        data += "\n\n" + urlify(prettyPrinted)
+                    } catch (e) {}
+                } else {
+                    let contentType = response.headers.get("Content-Type")
+                    if (!contentType.match(/json/)) {
+                        data = `Content was delivered as <b>${contentType}</b>, I can only display JSON. Try opening the link externally: <a href="${originalUrl}" target="_blank">${originalUrl}</a>`
+                    } else {
+                        let json = await response.json()
+                        let prettyPrinted = JSON.stringify(
+                            json,
+                            null,
+                            4
+                        ).escape()
+                        data = urlify(prettyPrinted)
+                    }
+                }
+            })
+            .catch((error) => {
+                data = error
+            })
     }
 
     function urlify(text) {
@@ -71,9 +97,16 @@
 </main>
 
 <style>
+    main {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        padding: 1rem;
+        box-sizing: border-box;
+    }
     input {
         font-size: 120%;
-        width: 100%;
         margin-bottom: 1rem;
         padding: 0.5rem;
     }
@@ -81,8 +114,13 @@
         font-family: monospace;
         white-space: pre-wrap;
         text-align: left;
-        background: #eee;
-        border-radius: 1rem;
         padding: 1rem;
+        overflow: auto;
+        background: #111;
+    }
+    @media (prefers-color-scheme: light) {
+        .json {
+            background: #eee;
+        }
     }
 </style>
