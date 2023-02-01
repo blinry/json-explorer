@@ -1,4 +1,15 @@
 <script>
+    String.prototype.escape = function () {
+        var tagsToReplace = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+        }
+        return this.replace(/[&<>]/g, function (tag) {
+            return tagsToReplace[tag] || tag
+        })
+    }
+
     let header = ""
     let data = ""
 
@@ -6,25 +17,29 @@
         header = url
         data = ""
         window.location.hash = url
-        fetch(url, {
+        if (url.startsWith("https")) {
+            url = url.replace("https://", "")
+            url = url.replace("/", ":443/")
+        }
+        console.log(url)
+        fetch(`https://cors.blinry.org/${url}`, {
             headers: {
+                Origin: "bla",
                 Accept: 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-                "Access-Control-Allow-Origin": "*",
-                mode: "no-cors",
             },
         }).then(async (response) => {
             let json = await response.json()
-            // pretty print
-            data = urlify(JSON.stringify(json, null, 4))
+            let prettyPrinted = JSON.stringify(json, null, 4).escape()
+            data = urlify(prettyPrinted)
+            //data = prettyPrinted
         })
     }
 
     function urlify(text) {
-        let urlRegex = /(https?:\/\/[^\s,"\\]+)/g
-        return text.replace(urlRegex, function (url) {
+        let urlRegex = /"(https?:\/\/[^\s,"\\]+)"/g
+        return text.replace(urlRegex, function (match, url) {
             console.log(url)
-            // wrap in tag that, when clicked, calls getData
-            return `<a href="#${url}">${url}</a>`
+            return `<span class="link" onclick="window.location.hash='${url}'" onauxclick="if (event.button == 1) window.open('${url}', '_blank')">${match}</span>`
         })
     }
 
