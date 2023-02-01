@@ -70,15 +70,14 @@
     }
 
     function hashChange() {
-        getData(window.location.hash.substring(1))
+        if (window.location.hash.length >= 2) {
+            getData(window.location.hash.substring(1))
+        } else {
+            getData("https://chaos.social/users/blinry")
+        }
     }
 
-    // is the hash non-empty?
-    if (window.location.hash) {
-        hashChange()
-    } else {
-        getData("https://chaos.social/users/blinry")
-    }
+    hashChange()
 </script>
 
 <svelte:window on:hashchange={hashChange} />
@@ -89,7 +88,7 @@
         bind:value={header}
         on:keydown={(e) => {
             if (e.key === "Enter") {
-                getData(header)
+                window.location.hash = header
             }
         }}
     />
