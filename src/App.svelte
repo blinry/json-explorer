@@ -83,6 +83,15 @@
 <svelte:window on:hashchange={hashChange} />
 
 <main>
+    <div id="header">
+        <h1 on:click={() => (window.location.hash = "")}>
+            blinry's JSON Explorer 🕵️
+        </h1>
+        <span class="gap" /><a
+            href="https://github.com/blinry/json-explorer"
+            target="_blank">(Source code)</a
+        >
+    </div>
     <input
         type="text"
         bind:value={header}
@@ -104,6 +113,23 @@
         padding: 1rem;
         box-sizing: border-box;
     }
+    #header {
+        display: flex;
+        align-items: flex-end;
+        margin-bottom: 1rem;
+    }
+    h1 {
+        margin: 0;
+        font-size: 180%;
+        color: black;
+        cursor: pointer;
+    }
+    h1 a {
+        font-weight: bold;
+    }
+    #header a {
+        color: darkblue;
+    }
     input {
         font-size: 120%;
         margin-bottom: 1rem;
@@ -116,6 +142,9 @@
         padding: 1rem;
         overflow: auto;
         background: #111;
+    }
+    .gap {
+        flex-grow: 1;
     }
     @media (prefers-color-scheme: light) {
         .json {
